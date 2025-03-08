@@ -1,13 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../lib/supabase";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "../components/ui/card";
+import mikeImage from "@/assets/mike.jpeg";
+import oppie from "../assets/oppie.jpg";
 
 interface Post {
   id: string;
@@ -62,46 +57,68 @@ const Home = () => {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-4xl font-bold text-gray-900">Latest Posts</h1>
-      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+      <section className="flex w-full gap-8 items-center">
+        <img src={oppie} className="w-1/2 rounded-xl h-full object-fill" />
+        <div className="w-3/4 px-2 space-y-5">
+          <h1 className="text-4xl">{posts[0].title}</h1>
+          <div className="flex flex-col max-w-[800px]">
+            <h2 className="text-gray-600 line-clamp-3 text-lg break-words overflow-hidden">
+              {posts[0].content.replace(/<[^>]*>/g, "").substring(0, 350)}...
+            </h2>
+          </div>
+          <div className="flex mt-4 gap-4 items-center">
+            <img
+              src={oppie}
+              className="w-12 h-12 object-cover rounded-full"
+              alt="author profile thumbnail"
+            />
+            <p className="text-gray-400">Alexander Osahon</p>
+          </div>
+        </div>
+      </section>
+      <h1 className="text-3xl font-bold text-gray-900">Latest Posts</h1>
+      <div className="grid  md:grid-cols-2 gap-8 lg:grid-cols-3">
         {posts.map((post) => (
-          // <Link
-          //   key={post.id}
-          //   to={`/post/${post.id}`}
-          //   className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-          // >
-          //   <div className="p-6">
-          //     <div className="text-sm text-indigo-600 mb-2">{post.categories.name}</div>
-          //     <h2 className="text-xl font-semibold text-gray-900 mb-2">{post.title}</h2>
-          //     <p className="text-gray-600 line-clamp-3">
-          //       {post.content.replace(/<[^>]*>/g, '').substring(0, 150)}...
-          //     </p>
-          //     <div className="mt-4 text-sm text-gray-500">
-          //       {new Date(post.created_at).toLocaleDateString()}
-          //     </div>
-          //   </div>
-          // </Link>
-          <Link key={post.id} to={`/post/${post.id}`}>
-            <Card className="w-[350px] hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="w-fit">
-                  <span className="text-xs font-medium bg-primary/10 text-primary rounded-full px-3 py-1">
-                    {post.categories.name}
-                  </span>
+          <Link
+            key={post.id}
+            to={`/post/${post.id}`}
+            className="  overflow-hidden  transition-shadow"
+          >
+            <div className="max-h-[450px]">
+              <img
+                src={mikeImage}
+                className="w-full rounded-xl h-48 object-cover object-top "
+              />
+              <div className="flex items-center justify-between mt-2">
+                <div className="text-xs text-gray-500 border px-2 py-1 rounded-xl min-w-10 flex justify-center border-gray-400 border-dashed ">
+                  {post.categories.name}
                 </div>
-                <CardTitle className="mt-3 line-clamp-2">
-                  {post.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground line-clamp-3">
-                  {post.content.replace(/<[^>]*>/g, "").substring(0, 150)}...
-                </p>
-              </CardContent>
-              <CardFooter className="text-sm text-muted-foreground">
-                {new Date(post.created_at).toLocaleDateString()}
-              </CardFooter>
-            </Card>
+                <div className=" text-sm text-gray-400">
+                  {new Date(post.created_at).toLocaleDateString("en-US", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </div>
+              </div>
+              <h2 className="text-xl uppercase font-semibold text-gray-900 my-2">
+                {post.title}
+              </h2>
+              <p className="text-gray-600 line-clamp-3">
+                {post.content
+                  .replace(/<[^>]*>/g, "")
+                  .substring(0, post.title.length > 50 ? 100 : 150)}
+                ...
+              </p>
+              <div className="flex mt-4 gap-4 items-center">
+                <img
+                  src={oppie}
+                  className="w-12 h-12 object-cover rounded-full"
+                  alt="author profile thumbnail"
+                />
+                <p className="text-gray-400">Alexander Osahon</p>
+              </div>
+            </div>
           </Link>
         ))}
       </div>

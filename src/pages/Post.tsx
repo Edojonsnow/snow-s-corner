@@ -126,7 +126,13 @@ const Post = () => {
       <article className="prose max-w-none">
         <h1 className="text-4xl font-bold text-gray-900">{post.title}</h1>
         <div className="flex items-center space-x-4 text-sm text-gray-500 mb-8">
-          <span>{new Date(post.created_at).toLocaleDateString()}</span>
+          <span>
+            {new Date(post.created_at).toLocaleDateString("en-US", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })}
+          </span>
           <span>•</span>
           <span>{post.categories.name}</span>
         </div>

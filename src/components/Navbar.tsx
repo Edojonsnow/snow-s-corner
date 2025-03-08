@@ -30,13 +30,15 @@ const Navbar = () => {
   const isAdmin = user?.email === "osahonoronsaye@yahoo.com";
 
   return (
-    <nav className="bg-white shadow-lg">
+    <nav className="bg-[#FBFBFB] ">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-8">
             <Link to="/" className="flex items-center space-x-2">
-              <BookOpen className="h-6 w-6 text-indigo-600" />
-              <span className="text-xl font-bold text-gray-800">Blog</span>
+              {/* <BookOpen className="h-6 w-6 text-indigo-600" /> */}
+              <span className="text-xl font-bold text-gray-800">
+                SNOW'S CORNER
+              </span>
             </Link>
             <div className="hidden md:flex items-center space-x-4">
               <Link to="/" className="text-gray-600 hover:text-gray-900">
@@ -54,10 +56,12 @@ const Navbar = () => {
             {isAdmin && (
               <Link
                 to="/create-post"
-                className="flex items-center space-x-2 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+                className="flex items-center space-x-2  border border-black text-white px-4 py-2 rounded-xl group hover:bg-black"
               >
-                <PenSquare className="h-4 w-4" />
-                <span>Create Post</span>
+                <PenSquare className="h-4 w-4 text-black group-hover:text-white" />
+                <span className="text-black group-hover:text-white">
+                  Create Post
+                </span>
               </Link>
             )}
             {user ? (
@@ -89,6 +93,7 @@ const Navbar = () => {
           </div>
         </div>
       </div>
+      <hr className="w-[90%] mx-auto border-gray-300 " />
     </nav>
   );
 };
