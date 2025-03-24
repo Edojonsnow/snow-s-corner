@@ -1,51 +1,58 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import mikeImage from "@/assets/mike.jpeg";
 import oppie from "../assets/oppie.jpg";
+import type { Schema } from "../../amplify/data/resource";
+import { generateClient } from "aws-amplify/data";
 
-interface Post {
-  id: string;
-  title: string;
-  content: string;
-  created_at: string;
-  categories: {
-    name: string;
-    slug: string;
-  };
-}
-
+const client = generateClient<Schema>();
 const Home = () => {
-  const [posts, setPosts] = React.useState<Post[]>([]);
-  const [loading, setLoading] = React.useState(true);
+  // const [posts, setPosts] = React.useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [posts, setPosts] = useState<Schema["Blogpost"]["type"][]>([]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetchPosts();
   }, []);
 
   const fetchPosts = async () => {
     try {
-      const { data, error } = await supabase
-        .from("posts")
-        .select(
-          `
-          *,
-          categories (
-            name,
-            slug
-          )
-        `
-        )
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      setPosts(data || []);
+      const { data: items } = await client.models.Blogpost.list({
+        authMode: "userPool",
+      });
+      setPosts(items);
+      console.log(items);
     } catch (error) {
-      console.error("Error fetching posts:", error);
+      console.log(error);
     } finally {
       setLoading(false);
     }
   };
+
+  // const fetchPosts = async () => {
+  //   try {
+  //     const { data, error } = await supabase
+  //       .from("posts")
+  //       .select(
+  //         `
+  //         *,
+  //         categories (
+  //           name,
+  //           slug
+  //         )
+  //       `
+  //       )
+  //       .order("created_at", { ascending: false });
+
+  //     if (error) throw error;
+  //     setPosts(data || []);
+  //   } catch (error) {
+  //     console.error("Error fetching posts:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   if (loading) {
     return (
@@ -91,10 +98,10 @@ const Home = () => {
               />
               <div className="flex items-center justify-between mt-2">
                 <div className="text-xs text-gray-500 border px-2 py-1 rounded-xl min-w-10 flex justify-center border-gray-400 border-dashed ">
-                  {post.categories.name}
+                  {post.category}
                 </div>
                 <div className=" text-sm text-gray-400">
-                  {new Date(post.created_at).toLocaleDateString("en-US", {
+                  {new Date(post.createdAt).toLocaleDateString("en-US", {
                     day: "numeric",
                     month: "short",
                     year: "numeric",

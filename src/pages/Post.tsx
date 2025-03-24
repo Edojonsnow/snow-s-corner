@@ -1,67 +1,52 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import DOMPurify from "dompurify";
-import { User } from "@supabase/supabase-js";
+import type { Schema } from "../../amplify/data/resource";
+import { generateClient } from "aws-amplify/data";
+import {
+  AuthSession,
+  fetchAuthSession,
+  getCurrentUser,
+} from "aws-amplify/auth";
 
-interface Comment {
-  id: string;
-  content: string;
-  created_at: string;
-  user_id: string;
-  profiles: {
-    email: string;
-  };
-}
-
-interface Post {
-  id: string;
-  title: string;
-  content: string;
-  created_at: string;
-  categories: {
-    name: string;
-  };
-}
-
+const client = generateClient<Schema>();
 const Post = () => {
   const { id } = useParams();
-  const [post, setPost] = React.useState<Post | null>(null);
-  const [comments, setComments] = React.useState<Comment[]>([]);
+  const [comments, setComments] = useState<Schema["Comments"]["type"][]>([]);
+  const [post, setPost] = useState<Schema["Blogpost"]["type"]>();
   const [newComment, setNewComment] = React.useState("");
   const [loading, setLoading] = React.useState(true);
-  const [user, setUser] = React.useState<User | null>(null);
+  const [userSession, setUserSession] = useState<AuthSession | undefined>(
+    undefined
+  );
+  const [user, setUser] = useState<string | undefined>(undefined);
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetchPost();
-    fetchComments();
+
     checkUser();
   }, [id]);
 
   const checkUser = async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    setUser(session?.user ?? null);
+    const session = await fetchAuthSession();
+    const { userId, username, signInDetails } = await getCurrentUser();
+    setUser(username);
+    setUserSession(session);
   };
 
   const fetchPost = async () => {
     try {
-      const { data, error } = await supabase
-        .from("posts")
-        .select(
-          `
-          *,
-          categories (
-            name
-          )
-        `
-        )
-        .eq("id", id)
-        .single();
-
-      if (error) throw error;
-      setPost(data);
+      if (!id) return;
+      const { data: blogpost } = await client.models.Blogpost.get(
+        { id },
+        {
+          authMode: "userPool",
+        }
+      );
+      if (blogpost) {
+        setPost(blogpost as Schema["Blogpost"]["type"]);
+      }
     } catch (error) {
       console.error("Error fetching post:", error);
     } finally {
@@ -70,43 +55,32 @@ const Post = () => {
   };
 
   const fetchComments = async () => {
-    const { data, error } = await supabase
-      .from("comments")
-      .select(
-        `
-        *,
-        profiles (
-          email
-        )
-      `
-      )
-      .eq("post_id", id)
-      .order("created_at", { ascending: true });
-
-    if (error) {
-      console.error("Error fetching comments:", error);
-    } else {
-      setComments(data || []);
+    try {
+      const { data: comments } = await client.models.Comments.list({
+        filter: {
+          blogpost_id: {
+            eq: id,
+          },
+        },
+      });
+      setComments(comments);
+    } catch (error) {
+      console.log(error);
     }
   };
 
-  const handleCommentSubmit = async (e: React.FormEvent) => {
+  const postComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !newComment.trim()) return;
 
-    try {
-      const { error } = await supabase.from("comments").insert({
-        content: newComment.trim(),
-        post_id: id,
-        user_id: user.id,
-      });
+    const { errors } = await client.models.Comments.create({
+      comment: newComment,
+      user: user,
+      blogpost_id: id,
+    });
 
-      if (error) throw error;
-      setNewComment("");
-      fetchComments();
-    } catch (error) {
-      console.error("Error adding comment:", error);
-    }
+    if (errors) throw errors;
+    setNewComment("");
   };
 
   if (loading) {
@@ -127,14 +101,14 @@ const Post = () => {
         <h1 className="text-4xl font-bold text-gray-900">{post.title}</h1>
         <div className="flex items-center space-x-4 text-sm text-gray-500 mb-8">
           <span>
-            {new Date(post.created_at).toLocaleDateString("en-US", {
+            {new Date(post.createdAt).toLocaleDateString("en-US", {
               day: "numeric",
               month: "short",
               year: "numeric",
             })}
           </span>
           <span>•</span>
-          <span>{post.categories.name}</span>
+          <span>{post.category}</span>
         </div>
         <div
           dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
@@ -144,8 +118,8 @@ const Post = () => {
       <div className="mt-12">
         <h2 className="text-2xl font-bold text-gray-900 mb-8">Comments</h2>
 
-        {user ? (
-          <form onSubmit={handleCommentSubmit} className="mb-8">
+        {userSession ? (
+          <form onSubmit={postComment} className="mb-8">
             <textarea
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
@@ -169,7 +143,7 @@ const Post = () => {
           </p>
         )}
 
-        <div className="space-y-6">
+        {/* <div className="space-y-6">
           {comments.map((comment) => (
             <div key={comment.id} className="bg-white rounded-lg shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
@@ -183,7 +157,7 @@ const Post = () => {
               <p className="text-gray-700">{comment.content}</p>
             </div>
           ))}
-        </div>
+        </div> */}
       </div>
     </div>
   );

@@ -1,25 +1,40 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { PenSquare, BookOpen, LogIn, LogOut, UserPlus } from "lucide-react";
 import { User } from "@supabase/supabase-js";
+import {
+  AuthSession,
+  fetchAuthSession,
+  getCurrentUser,
+} from "aws-amplify/auth";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const [user, setUser] = React.useState<User | null>(null);
+  const [author, setAuthor] = useState<string | undefined>(undefined);
+  const [session, setSession] = useState<AuthSession | undefined>(undefined);
 
-  React.useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session ? session.user : null);
-    });
+  useEffect(() => {
+    const getUser = async () => {
+      try {
+        const { userId, username, signInDetails } = await getCurrentUser();
+        const userSession = await fetchAuthSession();
+        setAuthor(signInDetails?.loginId);
+        setSession(userSession);
+      } catch (error) {
+        console.log(error);
+      }
+    };
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session ? session.user : null);
-    });
+    // const {
+    //   data: { subscription },
+    // } = supabase.auth.onAuthStateChange((_event, session) => {
+    //   setUser(session ? session.user : null);
+    // });
 
-    return () => subscription.unsubscribe();
+    // return () => subscription.unsubscribe();
+    getUser();
   }, []);
 
   const handleLogout = async () => {
@@ -27,7 +42,7 @@ const Navbar = () => {
     navigate("/");
   };
 
-  const isAdmin = user?.email === "osahonoronsaye@yahoo.com";
+  const isAdmin = author === "osahonoronsaye@yahoo.com";
 
   return (
     <nav className="bg-[#FBFBFB] ">
@@ -64,7 +79,7 @@ const Navbar = () => {
                 </span>
               </Link>
             )}
-            {user ? (
+            {session ? (
               <button
                 onClick={handleLogout}
                 className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"

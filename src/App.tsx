@@ -7,6 +7,7 @@ import CreatePost from "./pages/CreatePost";
 import Post from "./pages/Post";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import { Authenticator } from "@aws-amplify/ui-react";
 
 function App() {
   return (
@@ -17,7 +18,9 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/categories" element={<Categories />} />
+
             <Route path="/create-post" element={<CreatePost />} />
+
             <Route path="/post/:id" element={<Post />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />

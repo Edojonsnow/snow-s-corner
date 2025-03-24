@@ -24,3 +24,8 @@ prompt
 *.sln
 *.sw?
 /src/assets
+
+# amplify
+.amplify
+amplify_outputs*
+amplifyconfiguration*
