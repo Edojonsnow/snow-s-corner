@@ -1,7 +1,21 @@
 import React from "react";
+import type { FormEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { supabase } from "../lib/supabase";
+import { signIn } from "aws-amplify/auth";
+import outputs from "../../amplify_outputs.json";
 import { LogIn } from "lucide-react";
+import { Amplify } from "aws-amplify";
+
+Amplify.configure(outputs);
+
+interface SignInFormElements extends HTMLFormControlsCollection {
+  email: HTMLInputElement;
+  password: HTMLInputElement;
+}
+
+interface SignInForm extends HTMLFormElement {
+  readonly elements: SignInFormElements;
+}
 
 const Login = () => {
   const navigate = useNavigate();
@@ -10,21 +24,21 @@ const Login = () => {
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState("");
 
-  const handleSignIn = async (e: React.FormEvent) => {
+  const handleSignIn = async (e: FormEvent<SignInForm>) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      await signIn({
+        username: email,
+        password: password,
       });
-
-      if (error) throw error;
       navigate("/");
+      window.location.reload(); // This will refresh the page after navigation
     } catch (error) {
-      setError(error instanceof Error ? error.message : "An error occurred");
+      setError("Invalid email or password");
+      console.error("Error signing in:", error);
     } finally {
       setLoading(false);
     }

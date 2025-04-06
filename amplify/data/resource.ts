@@ -6,43 +6,47 @@ adding a new "isDone" field as a boolean. The authorization rule below
 specifies that any unauthenticated user can "create", "read", "update", 
 and "delete" any "Todo" records.
 =========================================================================*/
-const schema = a
-  .schema({
-    Blogpost: a
-      .model({
-        title: a.string().required(),
-        content: a.string().required(),
-        author: a.string().required(),
-        category: a.string().required(),
-        header_image: a.url(),
-        comments: a.hasMany("Comments", "blogpost_id"),
-        date: a.date(),
-      })
-      .authorization((allow) => [
-        allow.owner().to(["create", "read", "update"]),
-        allow.authenticated().to(["read"]),
-      ]),
+const schema = a.schema({
+  Blogpost: a
+    .model({
+      title: a.string().required(),
+      content: a.string().required(),
+      author: a.string().required(),
+      category: a.string().required(),
+      header_image: a.url(),
+      comments: a.hasMany("Comments", "blogpost_id"),
+      date: a.date(),
+    })
+    .authorization((allow) => [
+      allow.owner().to(["create", "read", "update", "delete"]),
+      allow.guest().to(["read"]),
+    ]),
 
-    Category: a.model({
+  Category: a
+    .model({
       category_name: a.string(),
-    }),
-    Comments: a
-      .model({
-        comment: a.string(),
-        user: a.string(),
-        blogpost_id: a.id(),
-        blogpost: a.belongsTo("Blogpost", "blogpost_id"),
-      })
-      .authorization((allow) => [
-        allow.owner().to(["create", "read"]),
-        allow.authenticated().to(["read"]),
-      ]),
-    User: a.model({
+    })
+    .authorization((allow) => [allow.guest().to(["create"])]),
+  Comments: a
+    .model({
+      comment: a.string(),
+      user: a.string(),
+      blogpost_id: a.id(),
+      blogpost: a.belongsTo("Blogpost", "blogpost_id"),
+    })
+    .authorization((allow) => [
+      allow.owner().to(["create", "read"]),
+      allow.authenticated().to(["read"]),
+    ]),
+  User: a
+    .model({
       author_id: a.id().required(),
       author: a.boolean(),
-    }),
-  })
-  .authorization((allow) => [allow.authenticated()]);
+    })
+    .authorization((allow) => [
+      allow.owner().to(["create", "read", "update", "delete"]),
+    ]),
+});
 
 export type Schema = ClientSchema<typeof schema>;
 

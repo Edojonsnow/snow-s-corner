@@ -38,31 +38,38 @@ const CreatePost = () => {
   const [userId, setUserId] = useState("");
   const [userName, setUserName] = useState("");
   const [media, setMedia] = useState<FileObject | null>(null);
-  const [session, setSession] = useState<AuthSession | undefined>(undefined);
+  const [session, setSession] = useState<AuthSession | undefined | null>(null);
   const [signInDetails, setSignInDetails] = useState<
     CognitoAuthSignInDetails | undefined
   >(undefined);
 
   useEffect(() => {
-    fetchCurrentUser();
+    checkAuthAndGetUser();
     fetchCategories();
   }, []);
 
-  const fetchCurrentUser = async () => {
+  const checkAuthAndGetUser = async () => {
     try {
-      const { username, userId, signInDetails } = await getCurrentUser();
-      const userSession = await fetchAuthSession();
+      // First check if user is authenticated
+      const authStatus = await fetchAuthSession();
+      setSession(authStatus);
+      console.log(authStatus);
 
-      setSession(userSession);
-      setUserName(username);
-      setUserId(userId);
-      setSignInDetails(signInDetails);
+      if (authStatus.tokens !== undefined) {
+        try {
+          const { signInDetails } = await getCurrentUser();
+        } catch (error) {
+          console.error("Error getting current user:", error);
 
-      if (signInDetails?.loginId !== "osahonoronsaye@yahoo.com") {
+          setSession(null);
+        }
+      } else {
         navigate("/");
       }
     } catch (error) {
-      console.log(error);
+      console.error("Error checking authentication:", error);
+
+      setSession(null);
     }
   };
 
@@ -77,20 +84,20 @@ const CreatePost = () => {
     setPostContent(newText); // Update the state with the new text
   };
 
-  const getUser = async () => {
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (user !== null) {
-        setUserId(user.id);
-      } else {
-        setUserId("");
-      }
-    } catch (e) {
-      console.log(e);
-    }
-  };
+  // const getUser = async () => {
+  //   try {
+  //     const {
+  //       data: { user },
+  //     } = await supabase.auth.getUser();
+  //     if (user !== null) {
+  //       setUserId(user.id);
+  //     } else {
+  //       setUserId("");
+  //     }
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  // };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async function uploadImage(e: { file?: File; target?: any }) {
@@ -210,105 +217,101 @@ const CreatePost = () => {
   };
 
   return (
-    <Authenticator>
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold text-gray-900 mb-8">
-          Create New Post
-        </h1>
-        <form onSubmit={createPost} className="space-y-6">
+    <div className="max-w-4xl mx-auto">
+      <h1 className="text-2xl font-bold text-gray-900 mb-8">Create New Post</h1>
+      <form onSubmit={createPost} className="space-y-6">
+        <div>
+          <label
+            htmlFor="title"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Title
+          </label>
+          <input
+            type="text"
+            id="title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="mt-1 block w-full rounded-lg  border-gray-400 shadow-md h-14 outline-none pl-4"
+            required
+          />
+        </div>
+
+        <div>
           <div>
-            <label
-              htmlFor="title"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Title
-            </label>
             <input
-              type="text"
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="mt-1 block w-full rounded-lg  border-gray-400 shadow-md h-14 outline-none pl-4"
-              required
+              type="file"
+              ref={fileInputRef}
+              onChange={(e) => uploadImage(e)}
+              accept="image/*"
+              className="hidden"
             />
-          </div>
-
-          <div>
-            <div>
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={(e) => uploadImage(e)}
-                accept="image/*"
-                className="hidden"
-              />
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={(e) => uploadImage(e)}
-                accept="image/*"
-                className="hidden"
-              />
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-300"
-              >
-                Upload Image
-              </button>
-            </div>
-            {media !== null && (
-              <div className="w-52 h-52">
-                <img
-                  src={`https://isoikalwzszsoggkzfwf.supabase.co/storage/v1/object/public/snows-corner-bucket/d3f5bbbf-635b-4d89-9a00-0294673fa074/${media.name}`}
-                  alt=""
-                  className="w-44 h-44"
-                />
-              </div>
-            )}
-          </div>
-
-          <div>
-            <label
-              htmlFor="category"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Category
-            </label>
-            <select
-              id="category"
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-              className="mt-1 block w-full h-12 outline-none rounded-lg px-4   border-gray-400 shadow-md"
-              required
-            >
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Content
-            </label>
-            <Editor text={postContent} onTextChange={handleTextChange} />
-          </div>
-
-          <div className="flex justify-end">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={(e) => uploadImage(e)}
+              accept="image/*"
+              className="hidden"
+            />
             <button
-              type="submit"
-              disabled={loading}
-              className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 disabled:opacity-50"
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-300"
             >
-              {loading ? "Publishing..." : "Publish Post"}
+              Upload Image
             </button>
           </div>
-        </form>
-      </div>
-    </Authenticator>
+          {media !== null && (
+            <div className="w-52 h-52">
+              <img
+                src={`https://isoikalwzszsoggkzfwf.supabase.co/storage/v1/object/public/snows-corner-bucket/d3f5bbbf-635b-4d89-9a00-0294673fa074/${media.name}`}
+                alt=""
+                className="w-44 h-44"
+              />
+            </div>
+          )}
+        </div>
+
+        <div>
+          <label
+            htmlFor="category"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Category
+          </label>
+          <select
+            id="category"
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value)}
+            className="mt-1 block w-full h-12 outline-none rounded-lg px-4   border-gray-400 shadow-md"
+            required
+          >
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Content
+          </label>
+          <Editor text={postContent} onTextChange={handleTextChange} />
+        </div>
+
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 disabled:opacity-50"
+          >
+            {loading ? "Publishing..." : "Publish Post"}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 };
 

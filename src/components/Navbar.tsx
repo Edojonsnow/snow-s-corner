@@ -7,39 +7,49 @@ import {
   AuthSession,
   fetchAuthSession,
   getCurrentUser,
+  signOut,
 } from "aws-amplify/auth";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const [user, setUser] = React.useState<User | null>(null);
-  const [author, setAuthor] = useState<string | undefined>(undefined);
-  const [session, setSession] = useState<AuthSession | undefined>(undefined);
+  const [author, setAuthor] = useState<string | undefined | null>(null);
+  const [session, setSession] = useState<AuthSession | undefined | null>(null);
 
   useEffect(() => {
-    const getUser = async () => {
+    const checkAuthAndGetUser = async () => {
       try {
-        const { userId, username, signInDetails } = await getCurrentUser();
-        const userSession = await fetchAuthSession();
-        setAuthor(signInDetails?.loginId);
-        setSession(userSession);
+        // First check if user is authenticated
+        const authStatus = await fetchAuthSession();
+        setSession(authStatus);
+        console.log(authStatus);
+
+        if (authStatus.tokens !== undefined) {
+          try {
+            const { signInDetails } = await getCurrentUser();
+            setAuthor(signInDetails?.loginId);
+          } catch (error) {
+            console.error("Error getting current user:", error);
+            setAuthor(null);
+            setSession(null);
+          }
+        } else {
+          setAuthor(null);
+          setSession(null);
+        }
       } catch (error) {
-        console.log(error);
+        console.error("Error checking authentication:", error);
+        setAuthor(null);
+        setSession(null);
       }
     };
 
-    // const {
-    //   data: { subscription },
-    // } = supabase.auth.onAuthStateChange((_event, session) => {
-    //   setUser(session ? session.user : null);
-    // });
-
-    // return () => subscription.unsubscribe();
-    getUser();
+    checkAuthAndGetUser();
   }, []);
-
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/");
+    await signOut();
+    navigate("/login");
+    window.location.reload();
   };
 
   const isAdmin = author === "osahonoronsaye@yahoo.com";
@@ -79,7 +89,7 @@ const Navbar = () => {
                 </span>
               </Link>
             )}
-            {session ? (
+            {session?.tokens !== undefined ? (
               <button
                 onClick={handleLogout}
                 className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"

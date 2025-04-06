@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { supabase } from "../lib/supabase";
 import DOMPurify from "dompurify";
 import type { Schema } from "../../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
@@ -41,7 +40,7 @@ const Post = () => {
       const { data: blogpost } = await client.models.Blogpost.get(
         { id },
         {
-          authMode: "userPool",
+          authMode: "identityPool",
         }
       );
       if (blogpost) {

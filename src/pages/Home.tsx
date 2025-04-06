@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { supabase } from "../lib/supabase";
 import mikeImage from "@/assets/mike.jpeg";
 import oppie from "../assets/oppie.jpg";
 import type { Schema } from "../../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
+
+import { fetchAuthSession } from "aws-amplify/auth";
 
 const client = generateClient<Schema>();
 const Home = () => {
@@ -18,8 +19,12 @@ const Home = () => {
 
   const fetchPosts = async () => {
     try {
+      const session = await fetchAuthSession();
+
+      const authMode = session.tokens ? "userPool" : "identityPool";
+
       const { data: items } = await client.models.Blogpost.list({
-        authMode: "userPool",
+        authMode,
       });
       setPosts(items);
       console.log(items);
@@ -29,30 +34,6 @@ const Home = () => {
       setLoading(false);
     }
   };
-
-  // const fetchPosts = async () => {
-  //   try {
-  //     const { data, error } = await supabase
-  //       .from("posts")
-  //       .select(
-  //         `
-  //         *,
-  //         categories (
-  //           name,
-  //           slug
-  //         )
-  //       `
-  //       )
-  //       .order("created_at", { ascending: false });
-
-  //     if (error) throw error;
-  //     setPosts(data || []);
-  //   } catch (error) {
-  //     console.error("Error fetching posts:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   if (loading) {
     return (
