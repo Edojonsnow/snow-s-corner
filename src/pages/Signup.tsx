@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { supabase } from "../lib/supabase";
+
 import { UserPlus } from "lucide-react";
 
 const Signup = () => {
@@ -12,36 +12,36 @@ const Signup = () => {
   const [error, setError] = React.useState("");
   const [success, setSuccess] = React.useState("");
 
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    setSuccess("");
+  // const handleSignUp = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   setLoading(true);
+  //   setError("");
+  //   setSuccess("");
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      setLoading(false);
-      return;
-    }
+  //   if (password !== confirmPassword) {
+  //     setError("Passwords do not match");
+  //     setLoading(false);
+  //     return;
+  //   }
 
-    try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
+  //   try {
+  //     const { error } = await supabase.auth.signUp({
+  //       email,
+  //       password,
+  //     });
 
-      if (error) throw error;
+  //     if (error) throw error;
 
-      setSuccess("Registration successful! You can now sign in.");
-      setTimeout(() => {
-        navigate("/login");
-      }, 2000);
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     setSuccess("Registration successful! You can now sign in.");
+  //     setTimeout(() => {
+  //       navigate("/login");
+  //     }, 2000);
+  //   } catch (error) {
+  //     setError(error.message);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   return (
     <div className="max-w-md mx-auto">

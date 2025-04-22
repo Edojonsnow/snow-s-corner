@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { supabase } from "../lib/supabase";
+
 import { PenSquare, BookOpen, LogIn, LogOut, UserPlus } from "lucide-react";
-import { User } from "@supabase/supabase-js";
+
 import {
   AuthSession,
   fetchAuthSession,
@@ -12,7 +12,7 @@ import {
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const [user, setUser] = React.useState<User | null>(null);
+  // const [user, setUser] = React.useState<User | null>(null);
   const [author, setAuthor] = useState<string | undefined | null>(null);
   const [session, setSession] = useState<AuthSession | undefined | null>(null);
 

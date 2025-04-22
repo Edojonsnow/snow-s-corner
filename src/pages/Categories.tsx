@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { supabase } from "../lib/supabase";
+
 import { Code, Book, Globe, LucideIcon, Bot, Earth } from "lucide-react";
 import { Card, CardContent } from "../components/ui/card";
 
@@ -80,32 +80,7 @@ const Categories = () => {
     <div className="space-y-8">
       <h1 className="text-4xl font-bold text-gray-900">Categories</h1>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {categories.map((category) => {
-          const IconComponent =
-            categoryIcons[category.name.toLowerCase()] || Globe;
-          return (
-            <Card
-              key={category.id}
-              className="group hover:shadow-lg transition-all cursor-pointer border-2"
-            >
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="p-2 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                      <IconComponent className="w-5 h-5" />
-                    </div>
-                    <span className="text-lg font-medium">{category.name}</span>
-                  </div>
-                  <div className="bg-muted px-2.5 py-1 rounded-full">
-                    <span className="text-sm font-medium text-muted-foreground">
-                      {category._count.posts} posts
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
+        <div>Test</div>;
       </div>
     </div>
   );

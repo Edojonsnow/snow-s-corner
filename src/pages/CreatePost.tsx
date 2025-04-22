@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../lib/supabase";
+
 import { FileObject } from "@supabase/storage-js";
 import {
   getCurrentUser,
@@ -73,13 +73,6 @@ const CreatePost = () => {
     }
   };
 
-  const fetchCategories = async () => {
-    const { data } = await supabase.from("categories").select("*");
-    setCategories(data || []);
-    if (data && data.length > 0) {
-      setCategoryId(data[0].id);
-    }
-  };
   const handleTextChange = (newText: string) => {
     setPostContent(newText); // Update the state with the new text
   };
