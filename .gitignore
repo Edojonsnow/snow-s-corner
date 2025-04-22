@@ -23,7 +23,7 @@ prompt
 *.njsproj
 *.sln
 *.sw?
-/src/assets
+# /src/assets
 
 # amplify
 .amplify

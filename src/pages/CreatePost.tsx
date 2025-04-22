@@ -272,7 +272,7 @@ const CreatePost = () => {
           )}
         </div>
 
-        <div>
+        {/* <div>
           <label
             htmlFor="category"
             className="block text-sm font-medium text-gray-700"
@@ -281,8 +281,8 @@ const CreatePost = () => {
           </label>
           <select
             id="category"
-            value={categoryId}
-            onChange={(e) => setCategoryId(e.target.value)}
+            value="Social"
+            // onChange={(e) => setCategoryId(e.target.value)}
             className="mt-1 block w-full h-12 outline-none rounded-lg px-4   border-gray-400 shadow-md"
             required
           >
@@ -292,7 +292,7 @@ const CreatePost = () => {
               </option>
             ))}
           </select>
-        </div>
+        </div> */}
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
