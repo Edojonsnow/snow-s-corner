@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-import { FileObject } from "@supabase/storage-js";
 import {
   getCurrentUser,
   fetchAuthSession,
@@ -9,7 +7,6 @@ import {
 } from "aws-amplify/auth";
 import type { Schema } from "../../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
-
 import "react-quill/dist/quill.snow.css";
 import { v4 as uuidv4 } from "uuid";
 
@@ -45,7 +42,6 @@ const CreatePost = () => {
 
   useEffect(() => {
     checkAuthAndGetUser();
-    fetchCategories();
   }, []);
 
   const checkAuthAndGetUser = async () => {
@@ -76,114 +72,6 @@ const CreatePost = () => {
   const handleTextChange = (newText: string) => {
     setPostContent(newText); // Update the state with the new text
   };
-
-  // const getUser = async () => {
-  //   try {
-  //     const {
-  //       data: { user },
-  //     } = await supabase.auth.getUser();
-  //     if (user !== null) {
-  //       setUserId(user.id);
-  //     } else {
-  //       setUserId("");
-  //     }
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  // };
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async function uploadImage(e: { file?: File; target?: any }) {
-    await getUser();
-
-    if (media) {
-      const { error: deleteError } = await supabase.storage
-        .from("snows-corner-bucket")
-        .remove([`${userId}/${media.name}`]);
-
-      if (deleteError) {
-        console.log("Error deleting previous file:", deleteError);
-      }
-    }
-
-    const file = e.target.files?.[0];
-
-    const { data, error } = await supabase.storage
-      .from("snows-corner-bucket")
-      .upload(userId + "/" + uuidv4(), file);
-
-    if (data) {
-      getMedia();
-    } else {
-      console.log(error);
-    }
-  }
-
-  async function getMedia() {
-    const { data } = await supabase.storage
-      .from("snows-corner-bucket")
-      .list(userId + "/", {
-        limit: 10,
-        offset: 0,
-        sortBy: {
-          column: "name",
-          order: "asc",
-        },
-      });
-    console.log(media);
-
-    if (data && data.length > 0) {
-      setMedia(data[0]);
-    } else {
-      setMedia(null);
-    }
-  }
-
-  // const handleFileUpload = async (
-  //   event: React.ChangeEvent<HTMLInputElement>
-  // ) => {
-  //   event.preventDefault();
-  //   const file = event.target.files?.[0];
-  //   if (file) {
-  //     const path = await uploadImage({ file });
-  //     console.log(path);
-  //     const imageUrl = `${
-  //       supabase.storage.from("snows-corner-bucket").getPublicUrl(path).data
-  //         .publicUrl
-  //     }`;
-  //   }
-  // };
-
-  // const handleSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   if (!title || !categoryId) return;
-
-  //   setLoading(true);
-  //   try {
-  //     const {
-  //       data: { session },
-  //     } = await supabase.auth.getSession();
-  //     if (!session) throw new Error("No session");
-
-  //     const { error } = await supabase.from("posts").insert({
-  //       title,
-  //       content: postContent,
-  //       category_id: categoryId,
-  //       author_id: session.user.id,
-  //     });
-
-  //     if (error) throw error;
-  //     navigate("/");
-  //   } catch (error) {
-  //     console.error("Error creating post:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-  // useEffect(() => {
-  //   getUser();
-  //   getMedia();
-  // }, [media]);
 
   const createPost = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -235,14 +123,14 @@ const CreatePost = () => {
             <input
               type="file"
               ref={fileInputRef}
-              onChange={(e) => uploadImage(e)}
+              // onChange={(e) => uploadImage(e)}
               accept="image/*"
               className="hidden"
             />
             <input
               type="file"
               ref={fileInputRef}
-              onChange={(e) => uploadImage(e)}
+              // onChange={(e) => uploadImage(e)}
               accept="image/*"
               className="hidden"
             />
