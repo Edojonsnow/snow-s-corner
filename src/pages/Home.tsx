@@ -45,7 +45,7 @@ const Home = () => {
 
   return (
     <div className="space-y-8">
-      {posts.length != 0 && (
+      {posts.length !== 0 && (
         <section className="flex w-full gap-8 items-center">
           <img src={oppie} className="w-1/2 rounded-xl h-full object-fill" />
           <div className="w-3/4 px-2 space-y-5">
@@ -68,7 +68,7 @@ const Home = () => {
       )}
       <h1 className="text-3xl font-bold text-gray-900">Latest Posts</h1>
       <div className="grid  md:grid-cols-2 gap-8 lg:grid-cols-3">
-        {posts.length != 0 &&
+        {posts.length !== 0 &&
           posts.map((post) => (
             <Link
               key={post.id}
