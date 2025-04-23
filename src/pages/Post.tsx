@@ -96,23 +96,27 @@ const Post = () => {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <article className="prose max-w-none">
-        <h1 className="text-4xl font-bold text-gray-900">{post.title}</h1>
-        <div className="flex items-center space-x-4 text-sm text-gray-500 mb-8">
-          <span>
-            {new Date(post.createdAt).toLocaleDateString("en-US", {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-            })}
-          </span>
-          <span>•</span>
-          <span>{post.category}</span>
-        </div>
-        <div
-          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
-        />
-      </article>
+      {
+        <article className="prose max-w-none">
+          <h1 className="text-4xl font-bold text-gray-900">{post.title}</h1>
+          <div className="flex items-center space-x-4 text-sm text-gray-500 mb-8">
+            <span>
+              {new Date(post.createdAt).toLocaleDateString("en-US", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              })}
+            </span>
+            <span>•</span>
+            <span>{post.category}</span>
+          </div>
+          <div
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(post.content),
+            }}
+          />
+        </article>
+      }
 
       <div className="mt-12">
         <h2 className="text-2xl font-bold text-gray-900 mb-8">Comments</h2>

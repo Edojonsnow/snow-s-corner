@@ -45,70 +45,73 @@ const Home = () => {
 
   return (
     <div className="space-y-8">
-      <section className="flex w-full gap-8 items-center">
-        <img src={oppie} className="w-1/2 rounded-xl h-full object-fill" />
-        <div className="w-3/4 px-2 space-y-5">
-          <h1 className="text-4xl">{posts[0].title}</h1>
-          <div className="flex flex-col max-w-[800px]">
-            <h2 className="text-gray-600 line-clamp-3 text-lg break-words overflow-hidden">
-              {posts[0].content.replace(/<[^>]*>/g, "").substring(0, 350)}...
-            </h2>
+      {posts.length != 0 && (
+        <section className="flex w-full gap-8 items-center">
+          <img src={oppie} className="w-1/2 rounded-xl h-full object-fill" />
+          <div className="w-3/4 px-2 space-y-5">
+            <h1 className="text-4xl">{posts[0]?.title}</h1>
+            <div className="flex flex-col max-w-[800px]">
+              <h2 className="text-gray-600 line-clamp-3 text-lg break-words overflow-hidden">
+                {posts[0]?.content.replace(/<[^>]*>/g, "").substring(0, 350)}...
+              </h2>
+            </div>
+            <div className="flex mt-4 gap-4 items-center">
+              <img
+                src={oppie}
+                className="w-12 h-12 object-cover rounded-full"
+                alt="author profile thumbnail"
+              />
+              <p className="text-gray-400">Alexander Osahon</p>
+            </div>
           </div>
-          <div className="flex mt-4 gap-4 items-center">
-            <img
-              src={oppie}
-              className="w-12 h-12 object-cover rounded-full"
-              alt="author profile thumbnail"
-            />
-            <p className="text-gray-400">Alexander Osahon</p>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
       <h1 className="text-3xl font-bold text-gray-900">Latest Posts</h1>
       <div className="grid  md:grid-cols-2 gap-8 lg:grid-cols-3">
-        {posts.map((post) => (
-          <Link
-            key={post.id}
-            to={`/post/${post.id}`}
-            className="  overflow-hidden  transition-shadow"
-          >
-            <div className="max-h-[450px]">
-              <img
-                src={mikeImage}
-                className="w-full rounded-xl h-48 object-cover object-top "
-              />
-              <div className="flex items-center justify-between mt-2">
-                <div className="text-xs text-gray-500 border px-2 py-1 rounded-xl min-w-10 flex justify-center border-gray-400 border-dashed ">
-                  {post.category}
-                </div>
-                <div className=" text-sm text-gray-400">
-                  {new Date(post.createdAt).toLocaleDateString("en-US", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })}
-                </div>
-              </div>
-              <h2 className="text-xl uppercase font-semibold text-gray-900 my-2">
-                {post.title}
-              </h2>
-              <p className="text-gray-600 line-clamp-3">
-                {post.content
-                  .replace(/<[^>]*>/g, "")
-                  .substring(0, post.title.length > 50 ? 100 : 150)}
-                ...
-              </p>
-              <div className="flex mt-4 gap-4 items-center">
+        {posts.length != 0 &&
+          posts.map((post) => (
+            <Link
+              key={post.id}
+              to={`/post/${post.id}`}
+              className="  overflow-hidden  transition-shadow"
+            >
+              <div className="max-h-[450px]">
                 <img
-                  src={oppie}
-                  className="w-12 h-12 object-cover rounded-full"
-                  alt="author profile thumbnail"
+                  src={mikeImage}
+                  className="w-full rounded-xl h-48 object-cover object-top "
                 />
-                <p className="text-gray-400">Alexander Osahon</p>
+                <div className="flex items-center justify-between mt-2">
+                  <div className="text-xs text-gray-500 border px-2 py-1 rounded-xl min-w-10 flex justify-center border-gray-400 border-dashed ">
+                    {post.category}
+                  </div>
+                  <div className=" text-sm text-gray-400">
+                    {new Date(post.createdAt).toLocaleDateString("en-US", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </div>
+                </div>
+                <h2 className="text-xl uppercase font-semibold text-gray-900 my-2">
+                  {post.title}
+                </h2>
+                <p className="text-gray-600 line-clamp-3">
+                  {post.content
+                    .replace(/<[^>]*>/g, "")
+                    .substring(0, post.title.length > 50 ? 100 : 150)}
+                  ...
+                </p>
+                <div className="flex mt-4 gap-4 items-center">
+                  <img
+                    src={oppie}
+                    className="w-12 h-12 object-cover rounded-full"
+                    alt="author profile thumbnail"
+                  />
+                  <p className="text-gray-400">Alexander Osahon</p>
+                </div>
               </div>
-            </div>
-          </Link>
-        ))}
+            </Link>
+          ))}
       </div>
     </div>
   );
