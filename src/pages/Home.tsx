@@ -45,7 +45,7 @@ const Home = () => {
 
   return (
     <div className="space-y-8">
-      {posts.length !== 0 && (
+      {posts && (
         <section className="flex w-full gap-8 items-center">
           <img src={oppie} className="w-1/2 rounded-xl h-full object-fill" />
           <div className="w-3/4 px-2 space-y-5">
@@ -68,11 +68,11 @@ const Home = () => {
       )}
       <h1 className="text-3xl font-bold text-gray-900">Latest Posts</h1>
       <div className="grid  md:grid-cols-2 gap-8 lg:grid-cols-3">
-        {posts.length !== 0 &&
+        {posts &&
           posts.map((post) => (
             <Link
-              key={post.id}
-              to={`/post/${post.id}`}
+              key={post?.id}
+              to={`/post/${post?.id}`}
               className="  overflow-hidden  transition-shadow"
             >
               <div className="max-h-[450px]">
@@ -82,10 +82,10 @@ const Home = () => {
                 />
                 <div className="flex items-center justify-between mt-2">
                   <div className="text-xs text-gray-500 border px-2 py-1 rounded-xl min-w-10 flex justify-center border-gray-400 border-dashed ">
-                    {post.category}
+                    {post?.category}
                   </div>
                   <div className=" text-sm text-gray-400">
-                    {new Date(post.createdAt).toLocaleDateString("en-US", {
+                    {new Date(post?.createdAt).toLocaleDateString("en-US", {
                       day: "numeric",
                       month: "short",
                       year: "numeric",
@@ -93,12 +93,12 @@ const Home = () => {
                   </div>
                 </div>
                 <h2 className="text-xl uppercase font-semibold text-gray-900 my-2">
-                  {post.title}
+                  {post?.title}
                 </h2>
                 <p className="text-gray-600 line-clamp-3">
-                  {post.content
+                  {post?.content
                     .replace(/<[^>]*>/g, "")
-                    .substring(0, post.title.length > 50 ? 100 : 150)}
+                    .substring(0, post?.title.length > 50 ? 100 : 150)}
                   ...
                 </p>
                 <div className="flex mt-4 gap-4 items-center">
