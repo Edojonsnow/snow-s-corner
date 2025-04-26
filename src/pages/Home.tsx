@@ -12,22 +12,52 @@ const Home = () => {
   // const [posts, setPosts] = React.useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [posts, setPosts] = useState<Schema["Blogpost"]["type"][]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false); // Track auth state
 
   useEffect(() => {
-    fetchPosts();
-  }, []);
+    const initializePage = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        // 1. Check Authentication Status FIRST
+        console.log("Checking auth session...");
+        await fetchAuthSession({ forceRefresh: false }); // Check if session exists
+        console.log("Auth session confirmed.");
+        setIsAuthenticated(true); // Mark as authenticated
 
+        // 2. If authenticated, THEN fetch data
+        console.log("Fetching posts...");
+        fetchPosts();
+      } catch (authError) {
+        // fetchAuthSession throws if user is not logged in
+        console.log("User is not authenticated:", authError);
+        setIsAuthenticated(false);
+        // Don't try to fetch posts if not authenticated
+        setError("You must be logged in to view posts."); // Optional message
+      } finally {
+        setLoading(false); // Done loading (either data or auth check)
+      }
+    };
+
+    initializePage();
+  }, []); // Run once on mount
   const fetchPosts = async () => {
     try {
       const session = await fetchAuthSession();
 
       const authMode = session.tokens ? "userPool" : "identityPool";
 
-      const { data: items } = await client.models.Blogpost.list({
+      const { data: items, errors } = await client.models.Blogpost.list({
         authMode,
       });
-      setPosts(items);
-      console.log(items);
+      if (errors) {
+        console.error("Error fetching posts:", errors);
+        setError("Failed to fetch posts. GraphQL errors occurred.");
+      } else {
+        console.log("Posts fetched successfully:", items);
+        setPosts(items);
+      }
     } catch (error) {
       console.log(error);
     } finally {
