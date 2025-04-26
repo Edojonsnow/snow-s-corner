@@ -18,8 +18,11 @@ const schema = a.schema({
       date: a.date(),
     })
     .authorization((allow) => [
-      allow.owner().to(["create", "read", "update", "delete"]),
-      allow.guest().to(["read"]),
+      // Authors group: Allow all operations (create, read, update, delete)
+      allow.group("AUTHORS").to(["create", "read", "update", "delete"]),
+
+      // Readers group: Allow only the 'read' operation
+      allow.group("READERS").to(["read"]),
     ]),
 
   Category: a

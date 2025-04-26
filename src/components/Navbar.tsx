@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { PenSquare, BookOpen, LogIn, LogOut, UserPlus } from "lucide-react";
+import { PenSquare, LogIn, LogOut, UserPlus } from "lucide-react";
 
 import {
   AuthSession,
@@ -13,7 +13,7 @@ import {
 const Navbar = () => {
   const navigate = useNavigate();
   // const [user, setUser] = React.useState<User | null>(null);
-  const [author, setAuthor] = useState<string | undefined | null>(null);
+  const [author, setAuthor] = useState<(string | null)[] | null>(null);
   const [session, setSession] = useState<AuthSession | undefined | null>(null);
 
   useEffect(() => {
@@ -22,12 +22,20 @@ const Navbar = () => {
         // First check if user is authenticated
         const authStatus = await fetchAuthSession();
         setSession(authStatus);
-        console.log(authStatus);
+        console.log("AuthStatus:", authStatus);
+
+        const groups = authStatus.tokens?.idToken?.payload["cognito:groups"];
+        console.log("User Groups:", groups);
 
         if (authStatus.tokens !== undefined) {
           try {
             const { signInDetails } = await getCurrentUser();
-            setAuthor(signInDetails?.loginId);
+
+            setAuthor(
+              groups
+                ? (Array.isArray(groups) ? groups : [groups]).map(String)
+                : null
+            );
           } catch (error) {
             console.error("Error getting current user:", error);
             setAuthor(null);
@@ -52,7 +60,7 @@ const Navbar = () => {
     window.location.reload();
   };
 
-  const isAdmin = author === "osahonoronsaye@yahoo.com";
+  const isAdmin = author?.includes("AUTHORS") ?? false;
 
   return (
     <nav className="bg-[#FBFBFB] ">
