@@ -1,5 +1,4 @@
 import { defineAuth } from "@aws-amplify/backend";
-import { addUserToGroup } from "../functions/add-user-to-group/resource";
 
 const currentBranch = process.env.AWS_BRANCH;
 const defaultCallbackUrl = "http://localhost:5173/";
@@ -39,7 +38,4 @@ export const auth = defineAuth({
     familyName: { mutable: true, required: true },
   },
   groups: ["AUTHORS", "READERS"],
-  triggers: {
-    postConfirmation: addUserToGroup,
-  },
 });
