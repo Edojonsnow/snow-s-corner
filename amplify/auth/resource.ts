@@ -1,25 +1,45 @@
 import { defineAuth } from "@aws-amplify/backend";
+import { addUserToGroup } from "../functions/add-user-to-group/resource";
 
-/**
- * Define and configure your auth resource
- * @see https://docs.amplify.aws/gen2/build-a-backend/auth
- */
+const currentBranch = process.env.AWS_BRANCH;
+const defaultCallbackUrl = "http://localhost:5173/";
+const defaultLogoutUrl = "http://localhost:5173/logout"; // Or just '/'
+
+let effectiveCallbackUrls: string[];
+let effectiveLogoutUrls: string[];
+
+if (currentBranch === "main") {
+  const prodCallback = process.env.PROD_CALLBACK_URL || defaultCallbackUrl;
+  const prodLogout = process.env.PROD_LOGOUT_URL || defaultLogoutUrl;
+
+  effectiveCallbackUrls = [prodCallback]; // Production only needs its own URL
+  effectiveLogoutUrls = [prodLogout];
+}
+
+// }
+else {
+  console.log(
+    `Using Default URLs for branch '${currentBranch || "local/sandbox"}'`
+  );
+  effectiveCallbackUrls = [defaultCallbackUrl];
+  effectiveLogoutUrls = [defaultLogoutUrl];
+}
 export const auth = defineAuth({
   loginWith: {
     email: true,
-    // Add or modify this section:
+
     externalProviders: {
-      // You MUST configure callback and logout URLs
-      callbackUrls: [
-        "http://localhost:5173/", // For local dev (adjust port if needed)
-        "https://main.dabou03zwfwya.amplifyapp.com/", // PRODUCTION URL!
-      ],
-      logoutUrls: [
-        "http://localhost:5173/logout", // Or '/' depending on your flow
-        "https://main.dabou03zwfwya.amplifyapp.com/logout", // PRODUCTION URL!
-      ],
-      // Other external provider config if you have them (Google, etc.)
+      callbackUrls: effectiveCallbackUrls,
+      logoutUrls: effectiveLogoutUrls,
     },
   },
+  userAttributes: {
+    email: { mutable: true, required: true },
+    givenName: { mutable: true, required: true },
+    familyName: { mutable: true, required: true },
+  },
   groups: ["AUTHORS", "READERS"],
+  triggers: {
+    postConfirmation: addUserToGroup,
+  },
 });
