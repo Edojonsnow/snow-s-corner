@@ -55,7 +55,12 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: "iam",
+    defaultAuthorizationMode: "apiKey",
+    apiKeyAuthorizationMode: {
+      // Define when the API key should expire (in days)
+      expiresInDays: 30, // Or 7, or 365, depending on your needs
+      description: "Temporary API Key for deployment", // Optional description
+    },
   },
 });
 
