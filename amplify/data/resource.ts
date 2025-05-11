@@ -11,7 +11,9 @@ const schema = a.schema({
     .model({
       title: a.string().required(),
       content: a.string().required(),
-      author: a.string().required(),
+
+      userID: a.id().required(),
+      author: a.belongsTo("User", "userID"),
       category: a.string().required(),
       header_image: a.url(),
       comments: a.hasMany("Comments", "blogpost_id"),
@@ -22,7 +24,7 @@ const schema = a.schema({
       allow.group("AUTHORS").to(["create", "read", "update", "delete"]),
 
       // Readers group: Allow only the 'read' operation
-      allow.group("READERS").to(["read"]),
+      allow.authenticated().to(["read"]),
     ]),
 
   Category: a
@@ -33,9 +35,11 @@ const schema = a.schema({
   Comments: a
     .model({
       comment: a.string(),
-      user: a.string(),
+      userID: a.id().required(),
+      user: a.belongsTo("User", "userID"),
       blogpost_id: a.id(),
       blogpost: a.belongsTo("Blogpost", "blogpost_id"),
+      created_at: a.date(),
     })
     .authorization((allow) => [
       allow.owner().to(["create", "read"]),
@@ -43,8 +47,10 @@ const schema = a.schema({
     ]),
   User: a
     .model({
-      author_id: a.id().required(),
-      author: a.boolean(),
+      firstName: a.string(),
+      lastName: a.string(),
+      postsAuthored: a.hasMany("Blogpost", "userID"),
+      commentsPosted: a.hasMany("Comments", "userID"),
     })
     .authorization((allow) => [
       allow.owner().to(["create", "read", "update", "delete"]),

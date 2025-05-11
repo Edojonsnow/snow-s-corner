@@ -1,14 +1,26 @@
 import React, { useState } from "react";
-import { signUp, confirmSignUp, autoSignIn } from "aws-amplify/auth"; // Import necessary functions
+import {
+  signUp,
+  confirmSignUp,
+  autoSignIn,
+  getCurrentUser,
+} from "aws-amplify/auth"; // Import necessary functions
 import { useNavigate } from "react-router-dom";
+import { generateClient } from "aws-amplify/data";
+import { Schema } from "../../amplify/data/resource";
+import { signIn } from "aws-amplify/auth";
+
+const client = generateClient<Schema>();
 
 function SignUpForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmationCode, setConfirmationCode] = useState("");
-  const [firstName, setFirstName] = useState(""); // <-- Add state
-  const [lastName, setLastName] = useState(""); // <-- Add state
-  const [loading, setLoading] = useState(false); // <-- Add state
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [author, setAuthor] = useState("");
+  const [authorId, setAuthorId] = useState("");
 
   const [error, setError] = useState("");
   const [showConfirmation, setShowConfirmation] = useState(false); // Control confirmation step UI
@@ -30,9 +42,6 @@ function SignUpForm() {
             family_name: lastName, // Include email as a user attribute
             // Add other attributes if needed, e.g., name: 'User Name'
           },
-          // Auto sign in the user after successful sign up (optional, requires confirm)
-          // You might handle sign-in separately after confirmation instead
-          // autoSignIn: true
         },
       });
 
@@ -45,10 +54,9 @@ function SignUpForm() {
       } else if (nextStep.signUpStep === "DONE") {
         // This typically happens if autoSignIn was true and successful,
         // or if confirmation isn't required by your pool settings.
+
         setError("Sign up successful! Redirecting...");
-        // Optional: attempt auto sign-in explicitly if needed
-        // await autoSignIn();
-        navigate("/"); // Or to a dashboard page
+        navigate("/");
       }
     } catch (err: any) {
       console.error("Error signing up:", err);
@@ -68,13 +76,50 @@ function SignUpForm() {
       });
       if (isSignUpComplete) {
         setError("Confirmation successful! Redirecting to log-in page");
+
         setTimeout(async () => {
-          navigate("/login");
+          navigate("/");
         }, 1000);
+        const userData = await createUser(email, password);
+        console.log("Created user data:", userData);
       }
     } catch (err: any) {
       console.error("Error confirming sign up:", err);
       setError(err.message || "An error occurred during confirmation.");
+    }
+  };
+
+  const createUser = async (email: string, password: string) => {
+    setAuthor(firstName + lastName);
+    setAuthorId(email);
+
+    const { isSignedIn, nextStep } = await signIn({
+      username: email,
+      password: password,
+    });
+    const { userId } = await getCurrentUser();
+
+    if (isSignedIn) {
+      try {
+        console.log("Attempting to create user record in DB...");
+        const response = await client.models.User.create(
+          {
+            id: userId,
+            firstName: firstName,
+            lastName: lastName,
+          },
+          {
+            authMode: "userPool",
+          }
+        );
+
+        if (response.data) {
+          console.log("Created user:", response.data);
+          return response.data;
+        }
+      } catch (error) {
+        console.log(error);
+      }
     }
   };
 

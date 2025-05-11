@@ -8,8 +8,6 @@ import {
 import type { Schema } from "../../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
 import "react-quill/dist/quill.snow.css";
-import { v4 as uuidv4 } from "uuid";
-
 import Editor from "../components/Editor";
 import { Authenticator } from "@aws-amplify/ui-react";
 
@@ -53,7 +51,8 @@ const CreatePost = () => {
 
       if (authStatus.tokens !== undefined) {
         try {
-          const { signInDetails } = await getCurrentUser();
+          const { signInDetails, userId } = await getCurrentUser();
+          setUserId(userId);
         } catch (error) {
           console.error("Error getting current user:", error);
 
@@ -83,7 +82,7 @@ const CreatePost = () => {
         {
           title,
           content: postContent,
-          author: userName,
+          userID: userId,
           category: "Social",
         },
         {

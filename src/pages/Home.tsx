@@ -4,14 +4,20 @@ import mikeImage from "@/assets/mike.jpeg";
 import oppie from "../assets/oppie.jpg";
 import type { Schema } from "../../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
-
 import { fetchAuthSession } from "aws-amplify/auth";
 
 const client = generateClient<Schema>();
+
+type EnrichedPost = Schema["Blogpost"]["type"] & {
+  authorName?: string;
+  authorFirstName?: string | null;
+  authorLastName?: string | null;
+  isLoadingAuthor?: boolean;
+};
+
 const Home = () => {
-  // const [posts, setPosts] = React.useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
-  const [posts, setPosts] = useState<Schema["Blogpost"]["type"][]>([]);
+  const [posts, setPosts] = useState<EnrichedPost[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false); // Track auth state
 
@@ -21,20 +27,17 @@ const Home = () => {
       setError(null);
       try {
         // 1. Check Authentication Status FIRST
-        console.log("Checking auth session...");
         await fetchAuthSession({ forceRefresh: false }); // Check if session exists
         console.log("Auth session confirmed.");
         setIsAuthenticated(true); // Mark as authenticated
 
-        // 2. If authenticated, THEN fetch data
-        console.log("Fetching posts...");
         fetchPosts();
       } catch (authError) {
         // fetchAuthSession throws if user is not logged in
         console.log("User is not authenticated:", authError);
         setIsAuthenticated(false);
         // Don't try to fetch posts if not authenticated
-        setError("You must be logged in to view posts."); // Optional message
+        setError("You must be logged in to view posts.");
       } finally {
         setLoading(false); // Done loading (either data or auth check)
       }
@@ -47,16 +50,37 @@ const Home = () => {
       const session = await fetchAuthSession();
 
       const authMode = session.tokens ? "userPool" : "identityPool";
-
       const { data: items, errors } = await client.models.Blogpost.list({
         authMode,
       });
+
+      if (items) {
+        const postsWithAuthorsPromises = items.map(async (post) => {
+          try {
+            const authorData = await post.author(); // This is the lazy load call
+            return {
+              ...post,
+              authorFirstName: authorData?.data?.firstName,
+              authorLastName: authorData?.data?.lastName,
+              authorName: authorData?.data
+                ? `${authorData.data.firstName} ${authorData.data.lastName}`.trim()
+                : "Unknown Author",
+            };
+          } catch (authorError) {
+            console.error(
+              `Error fetching author for post ${post.id}:`,
+              authorError
+            );
+            return { ...post, authorName: "Error loading author" }; // Handle error for individual author fetch
+          }
+        });
+
+        const enrichedPostsData = await Promise.all(postsWithAuthorsPromises);
+        setPosts(enrichedPostsData);
+      }
       if (errors) {
         console.error("Error fetching posts:", errors);
         setError("Failed to fetch posts. GraphQL errors occurred.");
-      } else {
-        console.log("Posts fetched successfully:", items);
-        setPosts(items);
       }
     } catch (error) {
       console.log(error);
@@ -137,7 +161,7 @@ const Home = () => {
                     className="w-12 h-12 object-cover rounded-full"
                     alt="author profile thumbnail"
                   />
-                  <p className="text-gray-400">Alexander Osahon</p>
+                  <p className="text-gray-400">{post?.authorName}</p>
                 </div>
               </div>
             </Link>
